@@ -1,0 +1,32 @@
+# put here your custom config value
+menu "Example Configuration"
+config BLINK_GPIO
+    int "Blink GPIO number"
+	range 4 5
+	default 5
+	help
+		GPIO number (IOxx, either 4 or 5) to blink on and off.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config WIFI_SSID
+    string "WiFi SSID"
+    default "myssid"
+    help
+	SSID (network name) for the example to connect to.
+
+config WIFI_PASSWORD
+    string "WiFi Password"
+    default "mypassword"
+    help
+	WiFi password (WPA or WPA2) for the example to use.
+
+config FIRMWARE_UPG_URL
+    string "HTTP Server URL"
+    default "https://192.168.0.3:8070/firmware.bin"
+	help
+		HTTP Server IP to download the image file from.
+
+endmenu

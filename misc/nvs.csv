@@ -1,0 +1,8 @@
+key,type,encoding,value
+config,namespace,,
+SSID,data,string,SSID
+PASS,data,string,PASSWORD
+CA_CERT,file,binary,/keys/ca.crt
+RSA_PRV,file,binary,/keys/rsa_prv.pem
+HTTPS_CRT,file,binary,/keys/esp32.crt
+HTTPS_KEY,file,binary,/keys/esp32.key

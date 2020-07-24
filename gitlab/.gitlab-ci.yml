@@ -1,0 +1,42 @@
+image: $DOCKER_IMAGE
+
+stages:
+  - build
+  - secure
+  - deploy
+
+build:
+  stage: build
+  script:
+    - make -j$(nproc) app
+  artifacts:
+    paths:
+    - build
+
+secure:
+  stage: secure
+  script:
+    - $IDF_PATH/components/esptool_py/esptool/espsecure.py sign_data --keyfile $FSS_PRV build/app-template.bin
+    - ./padder.sh
+    - openssl enc -aes-256-cbc -nosalt -pbkdf2 -iter 1000 -p -pass pass:`dd if=/dev/urandom count=32 bs=1 status=none | base64` -in build/app-template.bin -out build/app-template.bin.enc >> build/aes_key
+    - openssl rsautl -in build/aes_key -out build/aes_key.enc -keyform PEM -pubin -inkey $RSA_PUB -verify -encrypt -pkcs
+    - mv build/aes_key.enc build/aes_key
+  artifacts:
+    paths:
+    - build
+
+deploy:
+  stage: deploy
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > /root/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - scp build/aes_key $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_DIR/meta
+    - scp build/app-template.bin.enc $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_DIR/firmware.bin
+  artifacts:
+    paths:
+    - build
